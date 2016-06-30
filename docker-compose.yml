@@ -1,0 +1,8 @@
+version: '2'
+services:
+  polsar:
+    build: .
+    ports:
+     - "5000:8000"
+    volumes:
+     - .:/code

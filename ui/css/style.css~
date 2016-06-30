@@ -1,0 +1,57 @@
+.formPolsar{
+    background-color: #f3f3f3;
+    border: solid 1px #a1a1a1;
+    padding: 10px;
+    width: 400px;
+}
+
+.imageDiv label, .imageDiv img{
+    background-color: #f3f3f3;
+    border: solid 1px #a1a1a1;
+    padding: 10px;
+    width: 400px;
+}
+
+.formPolsar label, .formPolsar input{
+    display: block;
+    width: 120px;
+    float: left;
+    margin-bottom: 10px;
+}
+
+.formPolsar label{
+    text-align: right;
+    padding-right: 20px;
+}
+
+br{
+    clear: left;
+}
+
+body{
+    background-color: red;
+}
+
+
+#left_side {
+    float: left;
+}
+
+#center_s {
+    margin-left: auto;
+    margin-right: auto;
+    width: 65px;
+    background-color: #ccc;
+}
+
+#right_side {
+    margin-left: 20px;
+    margin-right: 20px;
+    width: 65px;
+    float: left;
+}
+
+.clear{
+    clear:both;
+}
+

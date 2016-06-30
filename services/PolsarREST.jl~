@@ -1,0 +1,143 @@
+################################################################################
+#
+# App: example_2_templates
+#
+# To run this app:
+# - Type:
+#     cd path/to/skeleton-webapp.jl/apps/example_2_templates
+#     julia main_templates.jl
+# - In your browser go to localhost:8000/home
+#
+################################################################################
+
+
+# Include dependencies
+using HttpServer    # Basic http/websockets server
+using Mustache      # For populating html templates with data
+using ImageView, Images, FileIO, QuartzImageIO
+
+include("http_utils.jl")
+#incluindo os códigos dos algoritmos
+include("../ZoomScript.jl")
+#include("../ImageDrawer/VisualizarImagem.jl")
+
+# The app is just a function that takes in a Request and returns a Response.
+# The response is initialised at the start of the function and modified later in the function.
+# The request is never modified.
+function app(req::Request)
+    res = Response()
+
+    #SERVICE
+    if req.resource == "/polsar" #retorna html com passagem de parâmetro para a html
+
+        tpl      = open(readall, "../ui/index-angular.html")                     # Retrieve template
+        tpl_data = Dict("homepage_text"  => "Hi, this is the home page of polsar.",
+                        "project_name" => "Spectacular PolSAR Image")
+                        #"size_x" => "",
+                        #"size_y" => "")    # Set data
+
+        res.data = Mustache.render(tpl, tpl_data)
+
+    #SERVICE
+    elseif req.resource == "/image" #retornar imagem file
+
+        #tentar retornar imagem
+        image_polsar_path = "../img.png"
+        #image_polsar      = open(readall, "../img.png")
+        #filename = string(image_polsar_path, req.resource)    # Example: "/static/js/bootstrap.min.js" becomes "../../static/js/bootstrap.min.js"
+        file_response!(req, image_polsar_path, res)          # Either populates res.data with the file contents, or res = notfound.
+
+    #SERVICE
+       # elseif req.resource == "/cutImage" #retorna a imagem cortada
+       # image_polsar_path = "imagem_cortada.png"
+        #file_response!(req, image_polsar_path, res)
+
+	#SERVICE
+         elseif ismatch(r"^/cutImage",req.resource) 
+        image_polsar_path = "imagem_cortada.png"
+        file_response!(req, image_polsar_path, res)
+
+    #SERVICE
+    elseif ismatch(r"^/image/(\d+)/(\d+)/(\d+)",req.resource) #retornar imagem file com algoritmo executado
+        #polsar/x/y/z
+        x = split(req.resource,'/')[3]
+        y = split(req.resource,'/')[4]
+        z = split(req.resource,'/')[5]
+
+        image_polsar_path = "../img.png"
+        #analisar quais parametros são esses x,y,z?
+        if ZoomScript.viewWithReturn("../Images/SanAnd_05508_10007_005_100114_L090HHHH_CX_01.mlc",
+           "../Images/SanAnd_05508_10007_005_100114_L090HVHV_CX_01.mlc",
+           "../Images/SanAnd_05508_10007_005_100114_L090VVVV_CX_01.mlc",parse(Int, z), image_polsar_path) == true
+          #tentar retornar imagem
+
+          #image_polsar      = open(readall, "../img.png")
+          #filename = string(image_polsar_path, req.resource)    # Example: "/static/js/bootstrap.min.js" becomes "../../static/js/bootstrap.min.js"
+          file_response!(req, image_polsar_path, res)          # Either populates res.data with the file contents, or res = notfound.
+        end
+
+    #SERVICE
+    elseif ismatch(r"^/polsar/(\d+)/(\d+)/(\d+)",req.resource) #chamar o algoritmo para gerar a png e mostrar na pagina
+        #polsar/x/y/z
+        x = split(req.resource,'/')[3]
+        y = split(req.resource,'/')[4]
+        z = split(req.resource,'/')[5]
+
+        image_polsar_path = "../img.png"
+        #invocar o algoritmo de pauli (alterado por Luciano Melo) retorna uma imagem
+        if ZoomScript.viewWithReturn("../Images/SanAnd_05508_10007_005_100114_L090HHHH_CX_01.mlc",
+           "../Images/SanAnd_05508_10007_005_100114_L090HVHV_CX_01.mlc",
+           "../Images/SanAnd_05508_10007_005_100114_L090VVVV_CX_01.mlc",parse(Int, z), image_polsar_path) == true
+
+           tpl      = open(readall, "../html/polsar.html")                     # Retrieve template
+           tpl_data = Dict("homepage_text"  => string("x=", x, " y=", y, " z=", z),
+                           "project_name" => "Spectacular PolSAR Image",
+                           "size_x" => x,
+                           "size_y" => y,
+                           "size_z" => z)    # Set data
+           res.data = Mustache.render(tpl, tpl_data)
+
+        end
+    #SERVICE
+        elseif ismatch(r"^/imgCut/(\d+)/(\d+)/(\d+)/(\d+)",req.resource)
+
+		#valores via url
+        xStart = parse(Int, split(req.resource,'/')[3])
+        xEnd = parse(Int,split(req.resource,'/')[4])
+	yStart = parse(Int, split(req.resource,'/')[5])
+        yEnd = parse(Int, split(req.resource,'/')[6])
+
+        print("----Xstart")
+        print(xStart)
+        print("----ystart")
+        print(yStart)
+        print("----xend")
+        print(xEnd)
+        print("----yend")
+        print(yEnd)
+	imgname = "imagem_cortada.png"
+        imgToCut = load("../img.png")
+        cutImg = subim(imgToCut, "x", xStart:xEnd, "y",yStart:yEnd)
+	#funfando
+ 	saveimg_time = Images.save(imgname,convert(Image,cutImg))
+	print(saveimg_time)
+        view(cutImg)
+	#res.data = read(STDIN, cutImg.data)
+	image_polsar_path = "imagem_cortada.png"
+	file_response!(req, image_polsar_path, res)
+       
+
+    #SERVICE else
+    else
+        res.status = 404
+        res.data   = "Requested resource not found"
+    end
+    res
+end
+
+
+
+
+# Instantiate and run server
+server = Server((req, res) -> app(req))    # Create Server instance with server.http.handle = anonymous function from (req, res) to res.
+run(server, 8000)                          # This is a blocking function

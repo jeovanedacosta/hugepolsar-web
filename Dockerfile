@@ -1,0 +1,16 @@
+FROM julia
+#RUN julia -e 'Pkg.update()'
+#RUN julia -e 'Pkg.add("HttpServer")'
+#RUN julia -e 'Pkg.add("Images")'
+#RUN julia -e 'Pkg.add("ImageView")'
+#RUN julia -e 'Pkg.add("Mustache")'
+#RUN julia -e 'Pkg.add("FixedPointNumbers")'
+#RUN julia -e 'Pkg.add("FileIO")'
+#RUN julia
+#RUN julia -e 'include("PolsarREST.jl")'
+#RUN julia -e 'Pkg.clone("https://github.com/joyent/http-parser")'
+#RUN julia -e 'Pkg.clone("https://github.com/JuliaIO/ImageMagick.jl.git")'
+#RUN julia -e 'Pkg.clone("https://github.com/JuliaWeb/MbedTLS.jl.git")'
+#RUN julia -e 'Pkg.add("MbedTLS")'
+#RUN julia -e 'Pkg.add("ImageMageck")'
+#RUN julia -e 'Pkg.add("HttpParser")'
